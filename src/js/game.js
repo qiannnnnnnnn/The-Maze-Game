@@ -1,3 +1,48 @@
+
+
+// 获取计时器元素
+const timerElement = document.getElementById('timer');
+
+// 定义计时器变量和初始时间
+let timerInterval;
+let timeLeft = 300; // 初始时间为 5 分钟
+
+// 在游戏加载时启动计时器
+startTimer();
+
+// 启动计时器函数
+function startTimer() {
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+// 更新计时器函数
+function updateTimer() {
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerElement.innerText = `Timer: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+    // 时间到时，停止计时器并结束游戏
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        alert("Time's up! Game over!");
+        window.location.reload();
+    }
+}
+
+// 重新生成迷宫按钮的点击事件处理
+document.getElementById('regenerateMaze').addEventListener('click', () => {
+    localStorage.getItem('lifetimeScore') ? localStorage.setItem('lifetimeScore', parseInt(localStorage.getItem('lifetimeScore')) - 1) : localStorage.setItem('lifetimeScore', 0);
+    window.location.reload();
+});
+
+// 其他游戏逻辑代码...
+
+
+
+
+
+
 document.getElementById('regenerateMaze').addEventListener('click', () => {
     localStorage.getItem('lifetimeScore') ? localStorage.setItem('lifetimeScore', parseInt(localStorage.getItem('lifetimeScore')) - 1) : localStorage.setItem('lifetimeScore', 0);
     window.location.reload();
@@ -27,7 +72,8 @@ const player = {
     x: 0,
     y: 0,
     size: cellSize / 2,
-    color: 'red'
+    color: 'red',
+    path: [] // 存储轨迹的数组
 };
 
 let exit = {
@@ -75,8 +121,14 @@ function drawMaze() {
 }
 
 function drawPlayer() {
+    // 先画出当前位置的玩家
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x * cellSize + (cellSize - player.size) / 2, player.y * cellSize + (cellSize - player.size) / 2, player.size, player.size);
+    // 再画出轨迹
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'; // 设置轨迹的颜色和透明度
+    player.path.forEach((point) => {
+        ctx.fillRect(point.x * cellSize + (cellSize - player.size) / 2, point.y * cellSize + (cellSize - player.size) / 2, player.size, player.size);
+    });
 }
 
 function drawExit() {
@@ -94,8 +146,13 @@ function movePlayer(dx, dy) {
     if (newX >= 0 && newX < cols && newY >= 0 && newY < rows && !checkCollision(newX, newY)) {
         player.x = newX;
         player.y = newY;
+         // 记录轨迹
+        player.path.push({x: newX, y: newY});
     }
 }
+
+
+
 
 function checkWin() {
     if (player.x === exit.x && player.y === exit.y) {
